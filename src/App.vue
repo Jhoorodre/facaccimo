@@ -65,6 +65,32 @@ export default {
     setLocale(locale) {
       this.$setLocale(locale);
     },
+    configureCorsProxy() {
+      this.$buefy.dialog.prompt({
+        message: this.$t('app.dialogs.corsProxyPromptMessage'),
+        inputAttrs: {
+          placeholder: 'https://your-proxy.example.com',
+          value: CorsProxy.getCustomProxyUrl() ?? ''
+        },
+        closeOnConfirm: false,
+        trapFocus: true,
+        onConfirm: (value, { close }) => {
+          if (value.trim() === '') {
+            CorsProxy.setCustomProxyUrl('');
+            close();
+            this.$buefy.toast.open({ message: this.$t('app.toasts.corsProxyReset'), type: 'is-info' });
+            return;
+          }
+          if (!CorsProxy.normalizeUrl(value)) {
+            this.$buefy.toast.open({ message: this.$t('app.toasts.invalidProxyUrl'), type: 'is-danger' });
+            return;
+          }
+          CorsProxy.setCustomProxyUrl(value);
+          close();
+          this.$buefy.toast.open({ message: this.$t('app.toasts.corsProxySaved'), type: 'is-success' });
+        }
+      });
+    },
     showUrl(fileName) {
       const target = this;
       target.loadingStatus = this.$t('app.loading.creatingUrl');
@@ -298,10 +324,12 @@ export default {
       if (!value) {
         this.$buefy.dialog.confirm({
           title: this.$t('app.dialogs.corsUnavailableTitle'),
-          message: this.$t('app.dialogs.corsUnavailableMessage'),
-          confirmText: this.$t('app.dialogs.ok'),
+          message: this.$t('app.dialogs.corsUnavailableMessage', { proxyUrl: CorsProxy.getProxyUrl() ?? '-' }),
+          confirmText: this.$t('app.dialogs.configureProxy'),
+          cancelText: this.$t('app.dialogs.ok'),
           type: 'is-primary',
-          hasIcon: true
+          hasIcon: true,
+          onConfirm: () => this.configureCorsProxy()
         });
       } else if (process.env.NODE_ENV === 'development') {
         this.$buefy.toast.open({ message: this.$t('app.toasts.corsAvailable'), type: 'is-success' });

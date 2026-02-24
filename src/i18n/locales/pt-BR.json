@@ -22,7 +22,9 @@
       "topicMessage": "Deseja adicionar o tópico \"cubari-source\" no repositório para facilitar a descoberta?",
       "add": "Adicionar",
       "corsUnavailableTitle": "Proxy CORS indisponível",
-      "corsUnavailableMessage": "O proxy CORS não está disponível. Inicie-o para continuar no modo de desenvolvimento."
+      "corsUnavailableMessage": "O proxy CORS não está disponível ({proxyUrl}). Configure um proxy para continuar.",
+      "configureProxy": "Configurar proxy",
+      "corsProxyPromptMessage": "Informe a URL do seu CORS proxy (deixe vazio para resetar)."
     },
     "toasts": {
       "cloneFailed": "Falha ao clonar repositório!\n{message}",
@@ -30,7 +32,10 @@
       "parseFailed": "Falha ao ler {file}: {message}",
       "seriesDeleted": "Série excluída!",
       "saveError": "Erro ao salvar série!{details}",
-      "corsAvailable": "Proxy CORS está disponível"
+      "corsAvailable": "Proxy CORS está disponível",
+      "corsProxySaved": "Proxy CORS salvo! Recarregue a página para aplicar em todo o fluxo.",
+      "corsProxyReset": "Proxy CORS personalizado removido. O padrão será usado.",
+      "invalidProxyUrl": "URL de proxy inválida! Use http:// ou https://"
     }
   },
   "common": {
