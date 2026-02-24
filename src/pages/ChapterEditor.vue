@@ -1,33 +1,25 @@
 <template>
   <div>
     <b-modal
-        v-model="isImporting"
-        has-modal-card
-        :destroy-on-hide="false"
-        aria-role="dialog"
-        aria-label="Import"
-        aria-modal>
+      v-model="isImporting"
+      has-modal-card
+      :destroy-on-hide="false"
+      aria-role="dialog"
+      :aria-label="$t('chapterEditor.import')"
+      aria-modal>
       <template #default="props">
         <div class="modal-card" style="width: auto">
           <header class="modal-card-head">
-            <p class="modal-card-title">Import</p>
+            <p class="modal-card-title">{{ $t('chapterEditor.importTitle') }}</p>
           </header>
           <section class="modal-card-body">
-            <div v-if="importType === IMPORT_TYPE_REDDIT">
-              Paste URL to Reddit Post
-              <p class="is-italic">You can include multiple posts by pasting multiple URLs in separate lines</p>
-            </div>
-            <div v-else-if="importType === IMPORT_TYPE_GDRIVE">
-              Paste URL to Google Drive shared image
-              <p class="is-italic">You can include multiple images by pasting multiple URLs in separate lines</p>
-            </div>
-            <b-field>
-              <b-input v-model="importContent" type="textarea"></b-input>
+            <b-field :label="$t('chapterEditor.importLabel')">
+              <b-input v-model="importContent" :placeholder="$t('chapterEditor.importPlaceholder')" type="textarea"></b-input>
             </b-field>
           </section>
           <footer class="modal-card-foot is-justify-content-flex-end">
-            <b-button @click="props.close">Cancel</b-button>
-            <b-button type="is-primary" @click="finishImport(props.close)">Import</b-button>
+            <b-button @click="props.close">{{ $t('common.discard') }}</b-button>
+            <b-button type="is-primary" @click="finishImport(props.close)">{{ $t('chapterEditor.importConfirm') }}</b-button>
           </footer>
         </div>
       </template>
@@ -37,68 +29,68 @@
         <div class="card">
           <header class="card-header">
             <p class="card-header-title">
-              Chapter
+              {{ $t('chapterManager.chapterNumber') }} {{ chapterKey }}
             </p>
             <div class="buttons">
-              <b-button type="is-danger" @click="discard">Discard</b-button>
-              <b-button type="is-success" @click="save">Save</b-button>
+              <b-button type="is-danger" @click="discard">{{ $t('common.discard') }}</b-button>
+              <b-button type="is-success" @click="save">{{ $t('common.save') }}</b-button>
             </div>
           </header>
           <div class="card-content">
             <div class="content">
               <section>
-                <b-field label="Title">
+                <b-field :label="$t('chapterEditor.title')">
                   <b-input v-model="chapter.title"></b-input>
                 </b-field>
                 <b-field grouped>
-                  <b-field label="Volume" expanded>
+                  <b-field :label="$t('chapterEditor.volume')" expanded>
                     <b-input ref="volume" type="number" v-model="chapter.volume"></b-input>
                   </b-field>
-                  <b-field label="Last updated" expanded>
+                  <b-field :label="$t('chapterEditor.lastUpdated')" expanded>
                     <b-datetimepicker
-                        icon-pack="fas"
-                        icon="calendar"
-                        v-model="datetime"
-                        horizontal-time-picker>
+                      icon-pack="fas"
+                      icon="calendar"
+                      v-model="datetime"
+                      horizontal-time-picker>
                       <template #left>
                         <b-button
-                            label="Now"
-                            type="is-primary"
-                            icon-left="clock"
-                            @click="datetime = new Date()" />
+                          :label="$t('chapterEditor.now')"
+                          type="is-primary"
+                          icon-left="clock"
+                          @click="datetime = new Date()" />
                       </template>
                     </b-datetimepicker>
                   </b-field>
                 </b-field>
-                <b-field label="Group name">
+                <b-field :label="$t('chapterEditor.groupName')">
                   <b-input v-model="groupName"></b-input>
                 </b-field>
                 <b-field>
                   <b-checkbox v-model="isProxy">
-                    Proxy
+                    {{ $t('chapterEditor.proxy') }}
                   </b-checkbox>
                 </b-field>
                 <div v-if="isProxy">
-                  <b-field label="Chapter URL">
+                  <b-field :label="$t('chapterEditor.chapterUrl')">
                     <b-input v-model="pages" @input="onProxyUrlChange"></b-input>
                   </b-field>
-                  Paste MangaDex/MangaSee/Imgur/MangaKatana URL above and it should be automatically turned into <pre style="display: inline; padding: 0.5rem">/proxy/api/</pre> URL
+                  {{ $t('chapterEditor.proxyHelp') }} <pre style="display: inline; padding: 0.5rem">/proxy/api/</pre> URL
                 </div>
                 <div v-else>
-                  <b-field label="List of image URLs">
+                  <b-field :label="$t('chapterEditor.imageUrls')">
                     <b-input v-model="pages" type="textarea"></b-input>
                   </b-field>
                   <div class="has-text-right">
                     <b-dropdown aria-role="list">
                       <template #trigger="{ active }">
                         <b-button
-                            label="Import"
-                            type="is-primary"
-                            icon-pack="fas"
-                            :icon-right="active ? 'caret-up' : 'caret-down'"/>
+                          :label="$t('chapterEditor.import')"
+                          type="is-primary"
+                          icon-pack="fas"
+                          :icon-right="active ? 'caret-up' : 'caret-down'"/>
                       </template>
-                      <b-dropdown-item aria-role="listitem" @click="openRedditDialog">Reddit Gallery</b-dropdown-item>
-                      <b-dropdown-item aria-role="listitem" @click="openGDriveDialog">Google Drive</b-dropdown-item>
+                      <b-dropdown-item aria-role="listitem" @click="openRedditDialog">{{ $t('chapterEditor.redditGallery') }}</b-dropdown-item>
+                      <b-dropdown-item aria-role="listitem" @click="openGDriveDialog">{{ $t('chapterEditor.googleDrive') }}</b-dropdown-item>
                     </b-dropdown>
                   </div>
                 </div>
@@ -113,7 +105,7 @@
 
 <script>
 
-import {BButton} from "buefy/src/components/button";
+import { BButton } from "buefy/src/components/button";
 import Chapter from "@/model/Chapter";
 import Groups from "@/model/Groups";
 import Reddit from "@/Reddit";
@@ -137,8 +129,6 @@ export default {
       importType: null,
       importContent: ''
     }
-  },
-  beforeMount() {
   },
   methods: {
     discard() {
@@ -175,31 +165,31 @@ export default {
         this.isImporting = false;
         this.pages += (this.pages.length === 0 ? '' : '\n') + GDrive.getImgArray(urls).join('\n');
       } else {
-        this.$buefy.toast.open({message: 'URLs are not a valid Google Drive URLs!', type: 'is-warning'});
+        this.$buefy.toast.open({ message: this.$t('chapterEditor.invalidGDrive'), type: 'is-warning' });
       }
     },
     parseReddit(urls, close) {
       if (Reddit.isRedditUrl(urls)) {
         close();
         this.isImporting = false;
-        this.$emit('loading', 'Getting data from Reddit');
+        this.$emit('loading', this.$t('chapterEditor.loadingReddit'));
         Reddit.getImgArray(urls).then(value => {
           this.pages += (this.pages.length === 0 ? '' : '\n') + value.join('\n');
           this.$emit('loaded');
         })
-            .catch(() => {
-              this.$emit('loaded');
-              this.$buefy.toast.open({
-                message: 'Failed to parse Reddit Galleries! Please try again later.',
-                type: 'is-danger'
-              });
+          .catch(() => {
+            this.$emit('loaded');
+            this.$buefy.toast.open({
+              message: this.$t('chapterEditor.redditFailed'),
+              type: 'is-danger'
             });
+          });
       } else {
-        this.$buefy.toast.open({message: 'URLs are not a valid Reddit Posts!', type: 'is-warning'});
+        this.$buefy.toast.open({ message: this.$t('chapterEditor.invalidReddit'), type: 'is-warning' });
       }
     },
     onProxyUrlChange() {
-      let proxy = Proxy.getProxyByUrl(this.pages);
+      const proxy = Proxy.getProxyByUrl(this.pages);
       if (proxy) {
         this.pages = proxy.getProxyUrl(this.pages);
       }
