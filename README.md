@@ -21,9 +21,13 @@ This repository is configured to deploy through GitHub Actions using `.github/wo
 3. Under **Build and deployment**, choose **Source: GitHub Actions**.
 4. Wait for the workflow **Deploy to GitHub Pages** to finish.
 
-For your fork, the expected URL is:
+Expected URL format for any fork:
 
-- https://jhoorodre.github.io/facaccimo/
+- `https://<github-username>.github.io/<repo-name>/`
+
+Example:
+
+- `https://jhoorodre.github.io/facaccimo/`
 
 > Note: this project builds into `desktop-wrapper/dist` (configured in `vue.config.js`), and the workflow already publishes that folder.
 
