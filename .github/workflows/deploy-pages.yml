@@ -31,6 +31,8 @@ jobs:
         run: npm ci
 
       - name: Build app
+        env:
+          NODE_OPTIONS: --openssl-legacy-provider
         run: npx vue-cli-service build
 
       - name: Upload Pages artifact
