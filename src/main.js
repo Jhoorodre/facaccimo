@@ -3,10 +3,12 @@ import App from './App.vue'
 import Buefy from 'buefy'
 import 'buefy/dist/buefy.css'
 import 'bulmaswatch/cyborg/bulmaswatch.min.css'
+import { I18nPlugin } from './i18n'
 
 Vue.use(Buefy, {
   defaultIconPack: 'fas'
 })
+Vue.use(I18nPlugin)
 
 // Few helpful links for development
 
