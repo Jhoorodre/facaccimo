@@ -5,51 +5,51 @@
         <div class="card-content">
           <div class="content">
             <div v-if="step === 0">
-              <p>I made this site to make managing cubari.moe repos easier to manage. This site is
-                static and the code is
-                open source.</p>
-              <p>The source code is available on <a href="https://github.com/stirante/facaccimo">GitHub</a>.</p>
-              <p>Additionally you can contact me on Discord (stirante).</p>
+              <p>{{ $t('home.intro') }}</p>
+              <p>
+                {{ $t('home.sourceCode') }}
+                <a href="https://github.com/stirante/facaccimo">GitHub</a>.
+              </p>
+              <p>{{ $t('home.contact') }}</p>
             </div>
-            <p v-if="step === 1">Do you have a GitHub account?</p>
-            <p v-if="step === 2">Create an account <a href="https://github.com/" target="_blank">here</a></p>
-            <p v-if="step === 3">Do you have a Personal Access Token?</p>
-            <p v-if="step === 4">Create a Personal Access Token (or use existing one if already created) <a
+            <p v-if="step === 1">{{ $t('home.haveGithub') }}</p>
+            <p v-if="step === 2">{{ $t('home.createAccount') }} <a href="https://github.com/" target="_blank">GitHub</a></p>
+            <p v-if="step === 3">{{ $t('home.havePat') }}</p>
+            <p v-if="step === 4">{{ $t('home.createPat') }} <a
                 href="https://github.com/settings/tokens/new?scopes=repo,user:email&description=facaccimo"
-                target="_blank">here</a>
+                target="_blank">GitHub</a>
             </p>
             <div v-if="step === 5">
-              <p>Fill your GitHub username and Personal Access Token</p>
-              <b-field label="Username">
-                <b-input v-model="username" required validation-message="This field is required!"></b-input>
+              <p>{{ $t('home.fillCredentials') }}</p>
+              <b-field :label="$t('home.username')">
+                <b-input v-model="username" required :validation-message="$t('home.validationRequired')"></b-input>
               </b-field>
-              <b-field label="Personal Access Token">
-                <b-input v-model="pat" required validation-message="This field is required!"></b-input>
+              <b-field :label="$t('home.pat')">
+                <b-input v-model="pat" required :validation-message="$t('home.validationRequired')"></b-input>
               </b-field>
             </div>
-            <p v-if="step === 6">Do you have a repository already?</p>
+            <p v-if="step === 6">{{ $t('home.haveRepo') }}</p>
             <div v-if="step === 7">
-              <p>Set the repository name</p>
-              <b-field label="Repository name">
-                <b-input v-model="repoName" required validation-message="This field is required!"></b-input>
+              <p>{{ $t('home.setRepoName') }}</p>
+              <b-field :label="$t('home.repoName')">
+                <b-input v-model="repoName" required :validation-message="$t('home.validationRequired')"></b-input>
               </b-field>
             </div>
 
             <div v-if="step === 8">
-              <p>Select repository from the list</p>
+              <p>{{ $t('home.selectRepo') }}</p>
               <RepoList :username="username" :pat="pat" v-on:repo-selected="onRepoSelected"/>
             </div>
-            <p v-if="step === 9">Do you want to save Personal Access Token and repository name for the future (using
-              browser's Local Storage)?</p>
+            <p v-if="step === 9">{{ $t('home.saveForFuture') }}</p>
           </div>
         </div>
         <footer class="card-footer">
-          <a v-if="step === 0 && saved" href="#" @click="goToManager()" class="card-footer-item">Load saved</a>
+          <a v-if="step === 0 && saved" href="#" @click="goToManager()" class="card-footer-item">{{ $t('home.loadSaved') }}</a>
           <a v-if="actionType === ACTION_BEGIN" href="#" @click="nextStep()" class="card-footer-item"
-             :class="canContinue ? '' : 'disabled'">Begin</a>
-          <a v-if="actionType === ACTION_NEXT" href="#" @click="nextStep()" class="card-footer-item">Next</a>
-          <a v-if="actionType === ACTION_YES_NO" href="#" @click="nextStep(false)" class="card-footer-item">No</a>
-          <a v-if="actionType === ACTION_YES_NO" href="#" @click="nextStep(true)" class="card-footer-item">Yes</a>
+             :class="canContinue ? '' : 'disabled'">{{ $t('home.begin') }}</a>
+          <a v-if="actionType === ACTION_NEXT" href="#" @click="nextStep()" class="card-footer-item">{{ $t('common.next') }}</a>
+          <a v-if="actionType === ACTION_YES_NO" href="#" @click="nextStep(false)" class="card-footer-item">{{ $t('common.no') }}</a>
+          <a v-if="actionType === ACTION_YES_NO" href="#" @click="nextStep(true)" class="card-footer-item">{{ $t('common.yes') }}</a>
         </footer>
       </div>
     </div>
@@ -63,7 +63,7 @@ import GitHubUtils from "@/GitHubUtils";
 
 export default {
   name: 'HomePage',
-  components: {RepoList},
+  components: { RepoList },
   data: function () {
     return {
       ACTION_BEGIN: 'begin',
@@ -131,43 +131,42 @@ export default {
         this.step = 5;
         this.actionType = this.ACTION_NEXT;
       } else if (this.step === 5) {
-        let target = this;
-        this.$emit('loading', 'Checking token');
+        const target = this;
+        this.$emit('loading', this.$t('home.checkingToken'));
         GitHubUtils.getEmail(this.username, this.pat).then(email => {
           target.email = email;
           this.$emit('loaded');
           target.step = 6;
           target.actionType = this.ACTION_YES_NO;
         }).catch(() => {
-          // We can't get user's email. Let's check whether token is valid at all. If we get repo list, then we just don't have email permission.
           GitHubUtils.getRepoList(this.username, this.pat)
-              .then(() => {
-                this.$emit('loaded');
-                this.$buefy.dialog.prompt({
-                  message: `Provide email address that will be associated with commits (usually the same as GitHub one)`,
-                  inputAttrs: {
-                    placeholder: 'user@example.org'
-                  },
-                  closeOnConfirm: false,
-                  trapFocus: true,
-                  canCancel: false,
-                  onConfirm: (value, {close}) => {
-                    const re = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-                    if (re.test(String(value).toLowerCase())) {
-                      target.email = value;
-                      target.step = 6;
-                      target.actionType = this.ACTION_YES_NO;
-                      close();
-                    } else {
-                      this.$buefy.toast.open({message: 'Invalid email!', type: 'is-danger'});
-                    }
+            .then(() => {
+              this.$emit('loaded');
+              this.$buefy.dialog.prompt({
+                message: this.$t('home.emailPrompt'),
+                inputAttrs: {
+                  placeholder: this.$t('home.emailPlaceholder')
+                },
+                closeOnConfirm: false,
+                trapFocus: true,
+                canCancel: false,
+                onConfirm: (value1, { close }) => {
+                  const re = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+                  if (re.test(String(value1).toLowerCase())) {
+                    target.email = value1;
+                    target.step = 6;
+                    target.actionType = this.ACTION_YES_NO;
+                    close();
+                  } else {
+                    this.$buefy.toast.open({ message: this.$t('home.invalidEmail'), type: 'is-danger' });
                   }
-                })
+                }
               })
-              .catch(() => {
-                this.$emit('loaded');
-                this.$buefy.toast.open({message: 'Invalid credentials!', type: 'is-danger'});
-              })
+            })
+            .catch(() => {
+              this.$emit('loaded');
+              this.$buefy.toast.open({ message: this.$t('home.invalidCredentials'), type: 'is-danger' });
+            })
         })
       } else if (this.step === 6) {
         if (value) {
@@ -179,10 +178,10 @@ export default {
         }
       } else if (this.step === 7 || this.step === 8) {
         if (this.step === 7) {
-          let target = this;
-          this.$emit('loading', 'Creating repo');
-          GitHubUtils.createRepo(this.username, this.pat, this.repoName).then(value1 => {
-            target.repoName = value1.data.full_name;
+          const target = this;
+          this.$emit('loading', this.$t('home.creatingRepo'));
+          GitHubUtils.createRepo(this.username, this.pat, this.repoName).then(value2 => {
+            target.repoName = value2.data.full_name;
             this.$emit('loaded');
             this.step = 9;
             this.actionType = this.ACTION_YES_NO;
@@ -207,18 +206,18 @@ export default {
     },
     goToManager() {
       GitHubUtils.createGH(this.username, this.pat).getUser().getProfile().then(() => {
-        this.$emit('finished', {pat: this.pat, username: this.username, repoName: this.repoName, email: this.email});
+        this.$emit('finished', { pat: this.pat, username: this.username, repoName: this.repoName, email: this.email });
       }).catch(err => {
         this.$buefy.dialog.prompt({
-          message: `The token you provided is not valid or has expired. Please provide a valid token. You can check them <a href="https://github.com/settings/tokens" target="_blank">here</a>`,
+          message: this.$t('home.tokenInvalidPrompt'),
           closeOnConfirm: false,
           trapFocus: true,
           canCancel: false,
-          onConfirm: (value, {close}) => {
+          onConfirm: (value, { close }) => {
             this.pat = value;
             window.localStorage.setItem('pat', this.pat);
             close();
-            this.$emit('finished', {pat: this.pat, username: this.username, repoName: this.repoName, email: this.email});
+            this.$emit('finished', { pat: this.pat, username: this.username, repoName: this.repoName, email: this.email });
           }
         });
         console.log(err);

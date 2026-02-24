@@ -5,10 +5,10 @@
         <div class="card-content">
           <div class="content">
             <b-icon
-                pack="fas"
-                icon="sync-alt"
-                custom-class="fa-spin">
-            </b-icon>
+              pack="fas"
+              icon="sync-alt"
+              custom-class="fa-spin"
+            />
             {{ loadingStatus }}
           </div>
         </div>
@@ -16,8 +16,17 @@
     </b-loading>
     <div class="section">
       <div class="column">
-        <h1 class="title">facaccimo</h1>
-        <h2 class="subtitle">easy cubari.moe sources</h2>
+        <div class="is-flex is-justify-content-space-between is-align-items-center">
+          <div>
+            <h1 class="title">facaccimo</h1>
+            <h2 class="subtitle">{{ $t('app.subtitle') }}</h2>
+          </div>
+          <b-field :label="$t('app.language')" class="ml-4 mb-0">
+            <b-select :value="$locale" @input="setLocale">
+              <option v-for="locale in locales" :key="locale" :value="locale">{{ locale }}</option>
+            </b-select>
+          </b-field>
+        </div>
       </div>
     </div>
     <HomePage v-if="page === HOME_PAGE" v-on:finished="cloneRepo" v-on:loading="displayLoader"
@@ -53,9 +62,12 @@ export default {
     SeriesManager
   },
   methods: {
+    setLocale(locale) {
+      this.$setLocale(locale);
+    },
     showUrl(fileName) {
-      let target = this;
-      target.loadingStatus = 'Creating URL';
+      const target = this;
+      target.loadingStatus = this.$t('app.loading.creatingUrl');
       target.loading = true;
       GitHubUtils.getCurrentBranch(this.repoName, this.fs).then(value => {
         return GitHubUtils.getBase64EncodedSlug(
@@ -63,11 +75,11 @@ export default {
         );
       }).then(value => {
         target.loading = false;
-        let url = 'https://cubari.moe/proxy/gist/' + value + '/';
+        const url = 'https://cubari.moe/proxy/gist/' + value + '/';
         this.$buefy.dialog.confirm({
-          title: 'Cubari URL for ' + fileName,
+          title: this.$t('app.dialogs.cubariUrlTitle', { fileName }),
           message: '<a href="' + url + '" target="_blank">' + url + '</a>',
-          confirmText: 'OK',
+          confirmText: this.$t('app.dialogs.ok'),
           type: 'is-primary',
           hasIcon: true
         });
@@ -78,64 +90,64 @@ export default {
       this.username = data.username;
       this.repoName = data.repoName;
       this.email = data.email;
-      let target = this;
+      const target = this;
       if (this.email === '') {
         this.$buefy.dialog.prompt({
-          message: `Provide email address that will be associated with commits (usually the same as GitHub one)`,
+          message: this.$t('app.dialogs.emailPrompt'),
           inputAttrs: {
-            placeholder: 'user@example.org'
+            placeholder: this.$t('home.emailPlaceholder')
           },
           closeOnConfirm: false,
           trapFocus: true,
           canCancel: false,
-          onConfirm: (value, {close}) => {
+          onConfirm: (value, { close }) => {
             const re = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
             if (re.test(String(value).toLowerCase())) {
               target.email = value;
               window.localStorage.setItem('email', target.email);
               close();
               target.loading = true;
-              target.loadingStatus = 'Cloning repo';
-              GitHubUtils.cloneRepo(this.repoName).then(value => {
-                target.fs = value;
-                target.loadingStatus = 'Parsing data';
+              target.loadingStatus = this.$t('app.loading.cloningRepo');
+              GitHubUtils.cloneRepo(this.repoName).then(value1 => {
+                target.fs = value1;
+                target.loadingStatus = this.$t('app.loading.parsingData');
                 target.parseData();
               }).catch((err) => {
                 console.error(err);
                 target.loading = false;
                 target.loadingStatus = '';
-                this.$buefy.toast.open({message: 'Failed to clone repo!\n' + err.message, type: 'is-danger'});
+                this.$buefy.toast.open({ message: this.$t('app.toasts.cloneFailed', { message: err.message }), type: 'is-danger' });
               })
             } else {
-              this.$buefy.toast.open({message: 'Invalid email!', type: 'is-danger'});
+              this.$buefy.toast.open({ message: this.$t('app.toasts.invalidEmail'), type: 'is-danger' });
             }
           }
         })
       } else {
         target.loading = true;
-        target.loadingStatus = 'Cloning repo';
+        target.loadingStatus = this.$t('app.loading.cloningRepo');
         GitHubUtils.cloneRepo(this.repoName)
           .then(value => {
             target.fs = value;
-            target.loadingStatus = 'Parsing data';
+            target.loadingStatus = this.$t('app.loading.parsingData');
             target.parseData();
           }).catch((err) => {
             console.error(err);
             target.loading = false;
             target.loadingStatus = '';
-            this.$buefy.toast.open({message: 'Failed to clone repo!\n' + err.message, type: 'is-danger'});
+            this.$buefy.toast.open({ message: this.$t('app.toasts.cloneFailed', { message: err.message }), type: 'is-danger' });
           });
       }
     },
-    parseData(/*createIndex*/) {
+    parseData() {
       this.series = [];
-      let noExt = [];
+      const noExt = [];
       this.fs.readdir('/', {}, (err, files) => {
-        let promises = [];
+        const promises = [];
         files.forEach(file => {
           if (file.endsWith('.json') && file !== 'index.json') {
             promises.push(this.fs.promises.readFile('/' + file, {}).then(data => {
-              this.loadingStatus = 'Parsing ' + file;
+              this.loadingStatus = this.$t('app.loading.parsingFile', { file });
               try {
                 this.series.push({
                   name: file,
@@ -143,7 +155,7 @@ export default {
                 });
               } catch (e) {
                 this.$buefy.toast.open({
-                  message: 'Failed to parse ' + file + ': ' + e.message,
+                  message: this.$t('app.toasts.parseFailed', { file, message: e.message }),
                   type: 'is-danger',
                   duration: 5000
                 });
@@ -151,7 +163,7 @@ export default {
             }))
           } else if (file.indexOf('.') === -1) {
             promises.push(this.fs.promises.readFile('/' + file, {}).then(data => {
-              this.loadingStatus = 'Parsing ' + file;
+              this.loadingStatus = this.$t('app.loading.parsingFile', { file });
               try {
                 noExt.push({
                   name: file,
@@ -163,39 +175,13 @@ export default {
             }))
           }
         });
-        return Promise.all(promises).then(async () => {
-          // if (createIndex) {
-          //   let index = [];
-          //   let branch = await GitHubUtils.getCurrentBranch(this.repoName, this.fs);
-          //   for (const series of this.series) {
-          //     this.loadingStatus = "Getting URL for series " + series.data.title;
-          //     index.push({
-          //       'file': series.name,
-          //       'seriesUrl': 'https://cubari.moe/proxy/gist/' + (await GitIO.create(GitHubUtils.getSeriesUrl(series.name, branch, this.repoName, this.fs))) + '/',
-          //       'title': series.data.title,
-          //       'description': series.data.description,
-          //       'artist': series.data.artist,
-          //       'author': series.data.author,
-          //       'cover': series.data.cover,
-          //       'chapters': Object.keys(series.data.chapters).length,
-          //       'lastChapterIndex': "" + Math.max(...Object.keys(series.data.chapters).map(series => +series)),
-          //       'lastChapter': series.data.chapters["" + Math.max(...Object.keys(series.data.chapters).map(series => +series))]
-          //     })
-          //   }
-          //   this.loadingStatus = "Updating index.json";
-          //   await GitHubUtils.addSeries('index.json', index, this.username, this.pat, this.fs, this.email);
-          //   try {
-          //     await GitHubUtils.createPages(this.username, this.repoName, branch, this.pat);
-          //   } catch (e) {
-          //     console.log(e);
-          //   }
-          // }
+        return Promise.all(promises).then(() => {
           this.loading = false;
           if (noExt.length !== 0) {
             this.$buefy.dialog.confirm({
-              title: 'Found potential series with no extension',
-              message: 'Found files without extension, that could be series. Do you want to rename them to include ".json" extension?<pre>' + noExt.map(value => value.name).join('\n') + '</pre>',
-              confirmText: 'Rename',
+              title: this.$t('app.dialogs.noExtensionTitle'),
+              message: this.$t('app.dialogs.noExtensionMessage', { files: noExt.map(value => value.name).join('\n') }),
+              confirmText: this.$t('app.dialogs.rename'),
               type: 'is-primary',
               hasIcon: true,
               onConfirm: () => this.renameChapters(noExt),
@@ -206,12 +192,12 @@ export default {
           }
           if (!window.localStorage || !window.localStorage.getItem('skipTopics')) {
             GitHubUtils.getTopics(this.repoName, this.username, this.pat).then(value => {
-              let names = value.data.names;
+              const names = value.data.names;
               if (names.indexOf('cubari-source') === -1) {
                 this.$buefy.dialog.confirm({
-                  title: 'Add GitHub topic?',
-                  message: 'Do you want to add "cubari-source" topic to the repo, so that it will be possible to discover?',
-                  confirmText: 'Add',
+                  title: this.$t('app.dialogs.topicTitle'),
+                  message: this.$t('app.dialogs.topicMessage'),
+                  confirmText: this.$t('app.dialogs.add'),
                   type: 'is-primary',
                   hasIcon: true,
                   onConfirm: () => {
@@ -219,7 +205,7 @@ export default {
                     GitHubUtils.setTopics(names, this.repoName, this.username, this.pat);
                   },
                   onCancel: () => {
-                    window.localStorage.setItem('skipTopics', "1");
+                    window.localStorage.setItem('skipTopics', '1');
                   }
                 });
               }
@@ -229,10 +215,10 @@ export default {
       })
     },
     renameChapters(noExt) {
-      let target = this;
-      this.loadingStatus = "Renaming files";
+      const target = this;
+      this.loadingStatus = this.$t('app.loading.renamingFiles');
       this.loading = true;
-      let promises = [];
+      const promises = [];
       for (const item of noExt) {
         promises.push(Promise.all([
           this.fs.promises.rename('/' + item.name, '/' + item.name + '.json'),
@@ -247,13 +233,13 @@ export default {
       })
     },
     deleteSeries(fileName) {
-      this.loadingStatus = 'Deleting ' + fileName;
+      this.loadingStatus = this.$t('app.loading.deletingSeries', { fileName });
       this.loading = true;
-      let target = this;
+      const target = this;
       GitHubUtils.deleteSeries(fileName, this.username, this.pat, this.fs, this.email).then(() => {
         target.parseData();
         target.loading = false;
-        this.$buefy.toast.open('Series deleted!')
+        this.$buefy.toast.open(this.$t('app.toasts.seriesDeleted'))
       })
     },
     goToSeries(name) {
@@ -272,15 +258,16 @@ export default {
       this.page = this.SERIES_MANAGER_PAGE;
     },
     saveSeries(name, series) {
-      this.loadingStatus = 'Saving ' + name;
+      this.loadingStatus = this.$t('app.loading.savingSeries', { fileName: name });
       this.loading = true;
-      let target = this;
+      const target = this;
       GitHubUtils.addSeries(name, series, this.username, this.pat, this.fs, this.email).then(() => {
         target.parseData(true);
       }).catch(e => {
         console.log(e);
         target.loading = false;
-        this.$buefy.toast.open({message: 'Error saving series!' + (e.data ? '\n' + e.data.response : ''), type: 'is-danger', duration: 5000})
+        const details = e.data ? '\n' + e.data.response : '';
+        this.$buefy.toast.open({ message: this.$t('app.toasts.saveError', { details }), type: 'is-danger', duration: 5000 })
       });
     },
     goToChapter(key, chapter) {
@@ -310,14 +297,14 @@ export default {
     CorsProxy.isAvailable().then(value => {
       if (!value) {
         this.$buefy.dialog.confirm({
-          title: 'CORS proxy not available',
-          message: 'CORS proxy is not available. Start it to continue the development.',
-          confirmText: 'OK',
+          title: this.$t('app.dialogs.corsUnavailableTitle'),
+          message: this.$t('app.dialogs.corsUnavailableMessage'),
+          confirmText: this.$t('app.dialogs.ok'),
           type: 'is-primary',
           hasIcon: true
         });
       } else if (process.env.NODE_ENV === 'development') {
-        this.$buefy.toast.open({message: 'CORS proxy is available', type: 'is-success'});
+        this.$buefy.toast.open({ message: this.$t('app.toasts.corsAvailable'), type: 'is-success' });
       }
     });
   },
@@ -341,6 +328,7 @@ export default {
       fs: null,
       series: [],
       selectedSeries: null,
+      locales: ['pt-BR', 'en']
     }
   }
 }

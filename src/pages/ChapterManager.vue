@@ -5,31 +5,31 @@
         <div class="card">
           <header class="card-header">
             <p class="card-header-title">
-              Overview
+              {{ $t('chapterManager.overview') }}
             </p>
             <div class="buttons">
-              <b-button type="is-danger" @click="discard">Discard</b-button>
-              <b-button type="is-success" @click="save">Save</b-button>
+              <b-button type="is-danger" @click="discard">{{ $t('common.discard') }}</b-button>
+              <b-button type="is-success" @click="save">{{ $t('common.save') }}</b-button>
             </div>
           </header>
           <div class="card-content">
             <div class="content">
               <section>
-                <b-field label="Title">
+                <b-field :label="$t('series.title')">
                   <b-input v-model="series.title"></b-input>
                 </b-field>
                 <b-field grouped>
-                  <b-field label="Artist" expanded>
+                  <b-field :label="$t('chapterManager.artist')" expanded>
                     <b-input v-model="series.artist"></b-input>
                   </b-field>
-                  <b-field label="Author" expanded>
+                  <b-field :label="$t('chapterManager.author')" expanded>
                     <b-input v-model="series.author"></b-input>
                   </b-field>
                 </b-field>
-                <b-field label="Description">
+                <b-field :label="$t('chapterManager.description')">
                   <b-input v-model="series.description" type="textarea"></b-input>
                 </b-field>
-                <b-field label="Cover URL">
+                <b-field :label="$t('chapterManager.coverUrl')">
                   <b-input v-model="series.cover"></b-input>
                 </b-field>
               </section>
@@ -43,7 +43,7 @@
         <div class="card">
           <header class="card-header">
             <p class="card-header-title">
-              Chapters
+              {{ $t('chapterManager.chapters') }}
             </p>
           </header>
           <div class="card-content">
@@ -54,31 +54,31 @@
                           @click="groupEdit()"
                           icon-pack="fas"
                           class="m-1"
-                          icon-left="pen">Group edit volume
+                          icon-left="pen">{{ $t('chapterManager.groupEdit') }}
                 </b-button>
                 <b-button type="is-primary"
                           @click="addNewChapter()"
                           icon-pack="fas"
                           class="m-1"
-                          icon-left="plus">Add new chapter
+                          icon-left="plus">{{ $t('chapterManager.addChapter') }}
                 </b-button>
               </div>
-            <table>
-              <thead>
+              <table>
+                <thead>
                 <tr>
-                  <th>Chapter number</th>
-                  <th>Title</th>
-                  <th>Volume</th>
-                  <th>Last updated</th>
-                  <th>Actions</th>
+                  <th>{{ $t('chapterManager.chapterNumber') }}</th>
+                  <th>{{ $t('series.title') }}</th>
+                  <th>{{ $t('chapterManager.volume') }}</th>
+                  <th>{{ $t('chapterManager.lastUpdated') }}</th>
+                  <th>{{ $t('series.actions') }}</th>
                 </tr>
-              </thead>
-              <tbody>
+                </thead>
+                <tbody>
                 <tr v-for="chapter in sortedChapters" :key="chapter.name">
                   <td>{{ chapter }}</td>
                   <td>{{ series.chapters[chapter].title }}</td>
                   <td>{{ series.chapters[chapter].volume }}</td>
-                  <td>{{ ''+new Date(series.chapters[chapter].getLastUpdated()).toLocaleDateString() }}</td>
+                  <td>{{ formatDate(series.chapters[chapter].getLastUpdated()) }}</td>
                   <td>
                     <div class="buttons">
                       <b-button type="is-primary"
@@ -92,22 +92,22 @@
                     </div>
                   </td>
                 </tr>
-              </tbody>
-            </table>
-              <div v-if="sortedChapters.length === 0" class="has-text-centered">No chapters</div>
+                </tbody>
+              </table>
+              <div v-if="sortedChapters.length === 0" class="has-text-centered">{{ $t('chapterManager.noChapters') }}</div>
               <div class="has-text-right">
                 <b-button type="is-primary"
                           :disabled="checkedRows.length === 0"
                           @click="groupEdit()"
                           icon-pack="fas"
                           class="m-1"
-                          icon-left="pen">Group edit volume
+                          icon-left="pen">{{ $t('chapterManager.groupEdit') }}
                 </b-button>
                 <b-button type="is-primary"
                           @click="addNewChapter()"
                           icon-pack="fas"
                           class="m-1"
-                          icon-left="plus">Add new chapter
+                          icon-left="plus">{{ $t('chapterManager.addChapter') }}
                 </b-button>
               </div>
             </div>
@@ -121,7 +121,7 @@
 <script>
 
 import Series from "@/model/Series";
-import {BButton} from "buefy/src/components/button";
+import { BButton } from "buefy/src/components/button";
 import Vue from "vue";
 import Chapter from "@/model/Chapter";
 import Groups from "@/model/Groups";
@@ -144,29 +144,31 @@ export default {
     }
   },
   methods: {
+    formatDate(date) {
+      return new Date(date).toLocaleDateString(this.$locale);
+    },
     groupEdit() {
-      let target = this;
+      const target = this;
       this.$buefy.dialog.prompt({
-        message: `Set the volume for selected chapters`,
+        message: this.$t('chapterManager.setVolumePrompt'),
         trapFocus: true,
         onConfirm: (value) => {
           target.checkedRows.forEach(e => {
             target.series.chapters[e].volume = value;
           });
-          target.$buefy.toast.open('Volume set!');
+          target.$buefy.toast.open(this.$t('chapterManager.volumeSet'));
         }
       })
     },
     deleteChapter(number) {
       Vue.delete(this.series.chapters, number);
-      // delete this.series.chapters[number];
-      this.$buefy.toast.open('Chapter deleted!')
+      this.$buefy.toast.open(this.$t('chapterManager.chapterDeleted'))
     },
     confirmDelete(number) {
       this.$buefy.dialog.confirm({
-        title: 'Deleting chapter ' + number,
-        message: 'Are you sure you want to <b>delete</b> this chapter?',
-        confirmText: 'Delete',
+        title: this.$t('chapterManager.confirmDeleteTitle', { number }),
+        message: this.$t('chapterManager.confirmDeleteMessage'),
+        confirmText: this.$t('common.delete'),
         type: 'is-danger',
         hasIcon: true,
         onConfirm: () => this.deleteChapter(number)
@@ -175,9 +177,9 @@ export default {
     editChapter(number) {
       let lastVolume = '';
       let lastGroup = '';
-      let keys = Object.keys(this.series.chapters);
+      const keys = Object.keys(this.series.chapters);
       if (keys.length > 0) {
-        let lastChapter = this.series.chapters[keys[keys.length - 1]];
+        const lastChapter = this.series.chapters[keys[keys.length - 1]];
         lastVolume = lastChapter.volume;
         lastGroup = Groups.getGroupName(lastChapter.groups);
       }
@@ -185,20 +187,20 @@ export default {
     },
     addNewChapter() {
       let key = '';
-      let keys = this.sortedChapters;
+      const keys = this.sortedChapters;
       if (keys.length > 0) {
-        let lastKey = keys[0];
+        const lastKey = keys[0];
         if (!isNaN(+lastKey)) {
           key = +lastKey + 1;
         }
       }
       this.$buefy.dialog.prompt({
-        message: `Provide chapter number`,
+        message: this.$t('chapterManager.promptChapterNumber'),
         inputAttrs: {
-          placeholder: 'e.g. 1',
+          placeholder: this.$t('chapterManager.chapterPlaceholder'),
           value: key + '',
           type: 'number',
-          step: "any"
+          step: 'any'
         },
         trapFocus: true,
         onConfirm: (value) => this.editChapter(value)
@@ -211,21 +213,21 @@ export default {
       this.$emit('save', this.name, this.series);
     },
     fixOldGDriveUrls() {
-      let target = this;
+      const target = this;
       this.$buefy.dialog.confirm({
-        title: 'Fixing Google Drive links',
-        message: 'Are you sure you want to fix all Google Drive links?',
-        confirmText: 'Fix',
+        title: this.$t('chapterManager.fixGDriveTitle'),
+        message: this.$t('chapterManager.fixGDriveMessage'),
+        confirmText: this.$t('chapterManager.fix'),
         type: 'is-danger',
         hasIcon: true,
         onConfirm: () => {
           let counter = 0;
-          let keys = Object.keys(target.series.chapters);
+          const keys = Object.keys(target.series.chapters);
           keys.forEach(e => {
-            let chapter = target.series.chapters[e];
-            let groups = Object.keys(chapter.groups);
+            const chapter = target.series.chapters[e];
+            const groups = Object.keys(chapter.groups);
             for (let i = 0; i < groups.length; i++) {
-              let group = chapter.groups[groups[i]];
+              const group = chapter.groups[groups[i]];
               for (let j = 0; j < group.length; j++) {
                 if (GDrive.isOldGDriveUrl(group[j])) {
                   group[j] = GDrive.updateOldUrl(group[j]);
@@ -234,7 +236,7 @@ export default {
               }
             }
           });
-          target.$buefy.toast.open(counter + ' old Google Drive links fixed!');
+          target.$buefy.toast.open(this.$t('chapterManager.fixedCount', { count: counter }));
         }
       })
     },

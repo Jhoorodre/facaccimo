@@ -1,23 +1,23 @@
 <template>
   <section>
     <b-loading is-full-page v-model="loading"></b-loading>
-    <b-field :disabled="!loading" label="Select a repository">
+    <b-field :disabled="!loading" :label="$t('repoList.label')">
       <b-autocomplete
           v-model="repo"
-          placeholder="Choose repository"
+          :placeholder="$t('repoList.placeholder')"
           field="full_name"
           open-on-focus
           :data="filteredDataObj"
           @select="option => $emit('repo-selected', option)"
       >
-        <template #empty>No repositories found</template>
+        <template #empty>{{ $t('repoList.empty') }}</template>
       </b-autocomplete>
     </b-field>
   </section>
 </template>
 
 <script>
-import {BAutocomplete} from "buefy/src/components/autocomplete";
+import { BAutocomplete } from "buefy/src/components/autocomplete";
 import GitHubUtils from "@/GitHubUtils";
 
 export default {
@@ -41,16 +41,16 @@ export default {
     filteredDataObj() {
       return this.repos.filter(option => {
         return (
-            option.full_name
-                .toString()
-                .toLowerCase()
-                .indexOf(this.repo.toLowerCase()) >= 0
+          option.full_name
+            .toString()
+            .toLowerCase()
+            .indexOf(this.repo.toLowerCase()) >= 0
         )
       })
     }
   },
   beforeMount() {
-    let target = this;
+    const target = this;
     GitHubUtils.getRepoList(this.username, this.pat).then(value => {
       target.repos = value.data;
       target.loading = false;
