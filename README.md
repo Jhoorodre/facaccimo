@@ -12,6 +12,25 @@ The UI now supports runtime localization with default locale set to `pt-BR` and 
 - Supported locales can be switched from the app header.
 - The selected locale is persisted in browser `localStorage` under `locale`.
 
+## GitHub Pages (fork-ready)
+
+This repository is configured to deploy through GitHub Actions using `.github/workflows/deploy-pages.yml`.
+
+1. Push your changes to `main`.
+2. In GitHub, open **Settings → Pages**.
+3. Under **Build and deployment**, choose **Source: GitHub Actions**.
+4. Wait for the workflow **Deploy to GitHub Pages** to finish.
+
+Expected URL format for any fork:
+
+- `https://<github-username>.github.io/<repo-name>/`
+
+Example:
+
+- `https://jhoorodre.github.io/facaccimo/`
+
+> Note: this project builds into `desktop-wrapper/dist` (configured in `vue.config.js`), and the workflow already publishes that folder.
+
 ## Project setup
 ```
 npm install
