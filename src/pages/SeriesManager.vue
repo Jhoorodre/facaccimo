@@ -7,11 +7,11 @@
             <table>
               <thead>
                 <tr>
-                  <th>File name</th>
-                  <th>Title</th>
-                  <th>Chapters</th>
-                  <th>Last Chapter</th>
-                  <th>Actions</th>
+                  <th>{{ $t('series.fileName') }}</th>
+                  <th>{{ $t('series.title') }}</th>
+                  <th>{{ $t('series.chapters') }}</th>
+                  <th>{{ $t('series.lastChapter') }}</th>
+                  <th>{{ $t('series.actions') }}</th>
                 </tr>
               </thead>
               <tbody>
@@ -22,11 +22,11 @@
                   <td>
                     {{ Object.keys(series.data.chapters).length !== 0
                       ? series.data.chapters[
-                          Object.keys(series.data.chapters)[
-                            Object.keys(series.data.chapters).length - 1
+                        Object.keys(series.data.chapters)[
+                          Object.keys(series.data.chapters).length - 1
                           ]
                         ].title
-                      : "N/A" }}
+                      : $t('series.na') }}
                   </td>
                   <td>
                     <div class="buttons" style="flex-wrap: nowrap;">
@@ -53,12 +53,12 @@
                 </tr>
               </tbody>
             </table>
-            <div v-if="series.length === 0" class="has-text-centered">No files</div>
+            <div v-if="series.length === 0" class="has-text-centered">{{ $t('series.noFiles') }}</div>
             <div class="has-text-right">
               <b-button type="is-primary"
                         @click="addNewSeries()"
                         icon-pack="fas"
-                        icon-left="plus">Add new series
+                        icon-left="plus">{{ $t('series.addNew') }}
               </b-button>
             </div>
           </div>
@@ -76,20 +76,12 @@ export default {
   components: {
     BButton,
   },
-  data: function() {
-    return {
-      sortIcon: "arrow-up",
-      sortIconSize: "is-small",
-    };
-  },
-  computed: {},
-  beforeMount() {},
   methods: {
     confirmDelete(fileName) {
       this.$buefy.dialog.confirm({
-        title: "Deleting " + fileName,
-        message: "Are you sure you want to <b>delete</b> this series?",
-        confirmText: "Delete",
+        title: this.$t('series.confirmDeleteTitle', { fileName }),
+        message: this.$t('series.confirmDeleteMessage'),
+        confirmText: this.$t('series.deleteConfirm'),
         type: "is-danger",
         hasIcon: true,
         onConfirm: () => this.$emit("delete", fileName),
@@ -100,9 +92,9 @@ export default {
     },
     addNewSeries() {
       this.$buefy.dialog.prompt({
-        message: `Provide file name`,
+        message: this.$t('series.promptFileName'),
         inputAttrs: {
-          placeholder: "e.g. MangaName.json",
+          placeholder: this.$t('series.filePlaceholder'),
         },
         trapFocus: true,
         onConfirm: (value) => this.goToSeries(value),
